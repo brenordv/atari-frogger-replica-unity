@@ -50,11 +50,11 @@ namespace Project.Scripts
         {
             var position = transform.position;
 
-            if (transform.position.y < -_verticalBoundaries)
+            if (position.y < -_verticalBoundaries)
             {
                 transform.position = new Vector2(position.x, position.y + jumpDistance);
             }
-            else if (transform.position.y > _verticalBoundaries)
+            else if (position.y > _verticalBoundaries)
             {
                 transform.position = _initialPosition;
                 OnPlayerEscaped?.Invoke();
