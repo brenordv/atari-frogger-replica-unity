@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,14 +11,21 @@ namespace Project.Scripts
         public Text scoreText;
         public Text levelText;
         public Text gameOverText;
-        public float difficultyIncrease = 1.2f;
-
+        public AudioClip gameOverClip;
+        public AudioClip nextLevelClip;
+        
         private float _highestPosition;
         private int _score;
         private int _level;
         private float _restartTimer = 5f;
+        private AudioSource _audioSource;
+        private bool _playedGameOverSound;
 
-        // Start is called before the first frame update
+        private void Awake()
+        {
+            _audioSource = GetComponent<AudioSource>();
+        }
+
         void Start()
         {
             gameOverText.gameObject.SetActive(false);
@@ -27,7 +35,6 @@ namespace Project.Scripts
             ResetScoreboard();
         }
 
-        // Update is called once per frame
         void Update()
         {
             if (player != null) return;
@@ -36,9 +43,16 @@ namespace Project.Scripts
 
         private void GameOver()
         {
-            gameOverText.gameObject.SetActive(true);
+            if (!_playedGameOverSound)
+            {
+                gameOverText.gameObject.SetActive(true);
+                _audioSource.PlayOneShot(gameOverClip);
+                _playedGameOverSound = true;
+            }
+            
             _restartTimer -= Time.deltaTime;
             if (_restartTimer > 0) return;
+            
             SceneManager.LoadScene("Game");
         }
 
@@ -54,12 +68,13 @@ namespace Project.Scripts
         private void OnPlayerEscaped()
         {
             _highestPosition = player.transform.position.y;
-            foreach (var enemy in GetComponentsInChildren<Enemy>())
+            foreach (var row in GetComponentsInChildren<EnemyRow>())
             {
-                enemy.speed *= difficultyIncrease;
+                row.AdvanceLevel();
             }
 
             NextLevel();
+            _audioSource.PlayOneShot(nextLevelClip);
         }
 
         private void AddScore(int points = 1)
